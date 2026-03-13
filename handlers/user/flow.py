@@ -57,9 +57,9 @@ async def cb_give_consent(cb: CallbackQuery, state: FSMContext) -> None:
     await cb.answer("✅ Согласие получено")
 
     await cb.message.answer(
-        "📄 <b>Введите номер своего Исполнительного производства</b>\n\n"
+        "📄 <b>Введите номер своего Исполнительного производства</b>(номер, дата возбуждения)\n\n"
         "<i>Если у вас их несколько — введите все через запятую</i>\n\n"
-        "Например: <code>77001/24/123456, 77001/24/654321</code>",
+        "Например: <code>123456/24/61000-ИП от 20.04.2024, 654321/23/61000.....</code>",
         parse_mode=ParseMode.HTML,
     )
     await state.set_state(Form.exec_number)
