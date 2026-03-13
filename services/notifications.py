@@ -43,21 +43,19 @@ async def send_lead_to_channel(bot: Bot, data: dict) -> None:
         f"🕐 <b>Дата заявки:</b> {submitted_at}"
     )
 
+    from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+    tg_id = data.get("tg_id")
+
+    buttons = []
+    if tg_id:
+        buttons.append(InlineKeyboardButton(
+            text="✉️ Написать клиенту",
+            url=f"tg://user?id={tg_id}",
+        ))
+    markup = InlineKeyboardMarkup(inline_keyboard=[buttons]) if buttons else None
+
     try:
-        from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-        tg_id = data.get("tg_id")
-        phone = data.get("phone", "").replace(" ", "").replace("-", "")
-
-        buttons = []
-        if tg_id:
-            buttons.append(InlineKeyboardButton(
-                text="✉️ Написать клиенту",
-                url=f"tg://user?id={tg_id}",
-            ))
-
-        # tel: не поддерживается Telegram Bot API — номер телефона уже виден в тексте карточки
-        markup = InlineKeyboardMarkup(inline_keyboard=[buttons]) if buttons else None
-
         await bot.send_message(
             chat_id=LEADS_CHANNEL_ID,
             text=text,
@@ -66,4 +64,17 @@ async def send_lead_to_channel(bot: Bot, data: dict) -> None:
         )
         logger.info("Лид отправлен в канал: tg_id=%s, name=%s", tg_id, data.get("name"))
     except Exception as exc:
-        logger.error("Ошибка отправки лида в канал: %s", exc)
+        # Если кнопка заблокирована настройками приватности — отправляем без кнопки
+        if "BUTTON_USER_PRIVACY_RESTRICTED" in str(exc):
+            logger.warning("Кнопка недоступна (приватность), отправляем без кнопки: tg_id=%s", tg_id)
+            try:
+                await bot.send_message(
+                    chat_id=LEADS_CHANNEL_ID,
+                    text=text,
+                    parse_mode=ParseMode.HTML,
+                )
+                logger.info("Лид отправлен без кнопки: tg_id=%s, name=%s", tg_id, data.get("name"))
+            except Exception as exc2:
+                logger.error("Повторная ошибка отправки лида: %s", exc2)
+        else:
+            logger.error("Ошибка отправки лида в канал: %s", exc)
