@@ -54,12 +54,8 @@ async def send_lead_to_channel(bot: Bot, data: dict) -> None:
                 text="✉️ Написать клиенту",
                 url=f"tg://user?id={tg_id}",
             ))
-        if phone:
-            buttons.append(InlineKeyboardButton(
-                text="📞 Позвонить",
-                url=f"tel:{phone}",
-            ))
 
+        # tel: не поддерживается Telegram Bot API — номер телефона уже виден в тексте карточки
         markup = InlineKeyboardMarkup(inline_keyboard=[buttons]) if buttons else None
 
         await bot.send_message(
