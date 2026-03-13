@@ -24,6 +24,10 @@ from handlers.user import flow as user_flow
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
     level=logging.INFO,
+    handlers=[
+        logging.StreamHandler(),                           # вывод в консоль
+        logging.FileHandler("bot.log", encoding="utf-8"), # запись в файл bot.log
+    ],
 )
 logger = logging.getLogger(__name__)
 
